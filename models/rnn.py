@@ -102,7 +102,7 @@ class rnn_decoder(nn.Module):
         if self.score_fn.startswith('general'):
             self.linear = nn.Linear(
                 config.decoder_hidden_size, config.emb_size)
-        elif score_fn.startswith('concat'):
+        elif self.score_fn.startswith('concat'):
             self.linear_query = nn.Linear(
                 config.decoder_hidden_size, config.decoder_hidden_size)
             self.linear_weight = nn.Linear(
@@ -148,7 +148,7 @@ class rnn_decoder(nn.Module):
             output, state = self.rnn(emb.squeeze(0), state)
             output, attn_weights = self.attention(output, contexts)
             output = self.dropout(output)
-            soft_score = F.softmax(self.linear(output), dim=1)
+            soft_score = F.softmax(self.compute_score(output), dim=1)
             outputs += [output]
             attns += [attn_weights]
 
@@ -165,7 +165,7 @@ class rnn_decoder(nn.Module):
                 output, state = self.rnn(emb, state)
                 output, attn_weights = self.attention(output, contexts)
                 output = self.dropout(output)
-                soft_score = F.softmax(self.linear(output), dim=1)
+                soft_score = F.softmax(self.compute_score(output), dim=1)
                 outputs += [output]
                 attns += [attn_weights]
             outputs = torch.stack(outputs)
